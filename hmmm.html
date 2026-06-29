@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hmmm...</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #f5f0e8;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: clamp(1.1rem, 2.8vw, 1.6rem);
+      line-height: 1.75;
+      color: #1a1a1a;
+      padding: 8vh 10vw 40vh 10vw;
+      word-break: break-word;
+    }
+
+    #text {
+      display: inline;
+    }
+
+    #cursor {
+      display: inline-block;
+      width: 0.55em;
+      height: 1em;
+      background: #1a1a1a;
+      vertical-align: text-bottom;
+      margin-left: 1px;
+      animation: blink 0.5s steps(1) infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #cursor { animation: none; }
+    }
+
+    #btn {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: #1a1a1a;
+      color: #f5f0e8;
+      border: none;
+      border-radius: 50px;
+      padding: 0.6em 1.2em;
+      font-family: Georgia, serif;
+      font-size: 0.95rem;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    }
+
+    #btn.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    #btn:hover {
+      background: #333;
+    }
+  </style>
+</head>
+<body>
+  <span id="text">Hmmm</span><span id="cursor"></span>
+  <button id="btn" onclick="goToBottom()">↓ Til bunnen</button>
+
+  <script>
+    const textEl = document.getElementById('text');
+    const btn = document.getElementById('btn');
+
+    const BATCH = 12;
+    let buffer = 'Hmmm';
+    const MAX_LEN = 8000;
+
+    let autoScroll = true;
+
+    function goToBottom() {
+      autoScroll = true;
+      btn.classList.remove('visible');
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    // Hvis brukeren scroller opp manuelt, skru av autoscroll og vis knappen
+    window.addEventListener('scroll', () => {
+      const atBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - 10;
+      if (atBottom) {
+        autoScroll = true;
+        btn.classList.remove('visible');
+      } else {
+        autoScroll = false;
+        btn.classList.add('visible');
+      }
+    }, { passive: true });
+
+    function frame() {
+      buffer += 'm'.repeat(BATCH);
+      if (buffer.length > MAX_LEN) {
+        buffer = buffer.slice(buffer.length - MAX_LEN);
+      }
+      textEl.textContent = buffer;
+      if (autoScroll) {
+        window.scrollTo(0, document.body.scrollHeight);
+      }
+      requestAnimationFrame(frame);
+    }
+
+    setTimeout(() => requestAnimationFrame(frame), 400);
+  </script>
+</body>
+</html>
